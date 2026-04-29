@@ -1,0 +1,83 @@
+pkgname=kewuaa-void
+version=1.0
+revision=1
+build_style=zig-build
+hostmakedepends="git pkg-config wayland-devel"
+makedepends="wayland-devel wayland-protocols libxkbcommon-devel
+ fcft-devel pixman-devel"
+depends="libxkbcommon wayland fcft pixman
+ mpv
+ wob
+ lswt
+ mako
+ foot
+ river
+ wmenu
+ wlopm
+ kanshi
+ swaybg
+ swayimg
+ pipewire
+ libnotify
+ gammastep
+ wlr-randr
+ wl-mirror
+ timeshift
+ slurp grim
+ stalonetray
+ wf-recorder
+ brightnessctl
+ swayidle waylock
+ lf chafa poppler
+ wl-clipboard cliphist
+ xdg-desktop-portal-wlr
+ wayland-pipewire-idle-inhibit
+ fcitx5 fcitx5-chinese-addons fcitx5-configtool"
+short_desc="Kewuaa's VoidLinux"
+maintainer="Kewuaa <1692525710@qq.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/kewuaa/void-packages"
+
+
+do_fetch() {
+    mkdir -p $wrksrc
+    [ -d "$wrksrc/kwm" ] || git clone https://github.com/kewuaa/kwm "$wrksrc/kwm"
+    [ -d "$wrksrc/kwim" ] || git clone https://github.com/kewuaa/kwim "$wrksrc/kwim"
+
+    cp "$FILESDIR/config.zon" "$wrksrc/kwm"
+}
+
+
+do_build() {
+    local destdir="$wrksrc/zig-out"
+
+    cd "$wrksrc/kwm"
+	DESTDIR="$destdir" zig build \
+		-j"${XBPS_MAKEJOBS}" \
+		--sysroot "${XBPS_CROSS_BASE}" \
+		--search-prefix "${XBPS_CROSS_BASE}/usr" \
+		--prefix /usr \
+		--global-cache-dir /host/zig \
+		--release=safe \
+		--verbose \
+        -Dpie \
+		install
+
+    cd "$wrksrc/kwim"
+	DESTDIR="$destdir" zig build \
+		-j"${XBPS_MAKEJOBS}" \
+		--sysroot "${XBPS_CROSS_BASE}" \
+		--search-prefix "${XBPS_CROSS_BASE}/usr" \
+		--prefix /usr \
+		--global-cache-dir /host/zig \
+		--release=safe \
+		--verbose \
+        -Dpie \
+        -Dkwm-config="$wrksrc/kwm/config.zon" \
+		install
+}
+
+
+do_install() {
+    vcopy zig-out/* /
+}

@@ -1,0 +1,23 @@
+pkgname=kwm
+version=0.2.2
+revision=1
+build_style=zig-build
+configure_args="$(vopt_bool bar bar) $(vopt_bool background background) $(vopt_bool kwim kwim)"
+hostmakedepends="pkg-config wayland-devel"
+makedepends="wayland-devel wayland-protocols libxkbcommon-devel
+ $(vopt_if bar fcft-devel) $(vopt_if bar pixman-devel)
+ $(vopt_if background fcft-devel) $(vopt_if background pixman-devel)"
+depends="libxkbcommon wayland
+ $(vopt_if bar fcft) $(vopt_if bar pixman)
+ $(vopt_if background fcft) $(vopt_if background pixman)"
+short_desc="Kewuaa's Window Manager"
+maintainer="Kewuaa <1692525710@qq.com>"
+license="GPL-3.0-only"
+homepage="https://github.com/kewuaa/kwm"
+distfiles="https://github.com/kewuaa/kwm/archive/refs/tags/v$version.tar.gz"
+
+build_options="bar background kwim"
+build_options_default="bar kwim"
+desc_option_bar="Enable bar"
+desc_option_background="Enable background"
+desc_option_kwim="Enable kwim"

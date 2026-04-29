@@ -1,0 +1,19 @@
+pkgname=kwim
+version=0.1.5
+revision=1
+build_style=zig-build
+hostmakedepends="pkg-config wayland-devel"
+makedepends="wayland-devel wayland-protocols libxkbcommon-devel"
+depends="wayland libxkbcommon"
+short_desc="Input device manager"
+maintainer="Kewuaa <1692525710@qq.com>"
+license="GPL-3.0-only"
+homepage="https://github.com/kewuaa/kwim"
+distfiles="https://github.com/kewuaa/kwim/archive/refs/tags/v$version.tar.gz"
+
+build_options="bar background kwim"
+build_options_default="bar kwim"
+desc_option_dev="Development version"
+desc_option_bar="Enable bar"
+desc_option_background="Enable background"
+desc_option_kwim="Enable kwim"

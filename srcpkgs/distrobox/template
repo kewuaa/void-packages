@@ -1,0 +1,22 @@
+pkgname=distrobox
+version=1.8.2.5
+revision=1
+depends="$(vopt_if podman podman) $(vopt_if docker docker)"
+short_desc="Use any Linux distribution inside your terminal"
+maintainer="Kewuaa <1692525710@qq.com>"
+license="GPL-3.0-only"
+homepage="https://distrobox.it"
+distfiles="https://github.com/89luca89/distrobox/archive/refs/tags/$version.tar.gz"
+checksum=0c3bc4785ee3be3b89f93abb7cc0a9f60e56989e81319af140a4b60403b18f80
+
+build_options="podman docker"
+build_options_default="podman"
+desc_option_podman="Use podman as backend"
+desc_option_docker="Use docker as backend"
+
+
+do_install() {
+    cd "$wrksrc"
+    mkdir -p "$DESTDIR/usr"
+    ./install --prefix "$DESTDIR/usr"
+}

@@ -1,0 +1,195 @@
+diff --git a/.gitignore b/.gitignore
+index 378eac2..42cb20b 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1 +1,4 @@
+-build
++build*/
++.cache/
++pkg/
++*.zst
+diff --git a/menu.c b/menu.c
+index 207d71c..cd4cdd1 100644
+--- a/menu.c
++++ b/menu.c
+@@ -85,15 +85,18 @@ static bool parse_color(const char *color, uint32_t *result) {
+ // Parse menu options from command line arguments.
+ void menu_getopts(struct menu *menu, int argc, char *argv[]) {
+ 	const char *usage =
+-		"Usage: wmenu [-biPv] [-f font] [-l lines] [-o output] [-p prompt]\n"
++		"Usage: wmenu [-bciPv] [-f font] [-l lines] [-o output] [-p prompt]\n"
+ 		"\t[-N color] [-n color] [-M color] [-m color] [-S color] [-s color]\n";
+ 
+ 	int opt;
+-	while ((opt = getopt(argc, argv, "bhiPvf:l:o:p:N:n:M:m:S:s:")) != -1) {
++	while ((opt = getopt(argc, argv, "bchiPvf:l:o:p:N:n:M:m:S:s:")) != -1) {
+ 		switch (opt) {
+ 		case 'b':
+ 			menu->bottom = true;
+ 			break;
++        case 'c': 
++            menu->centerd = true;
++            break;
+ 		case 'i':
+ 			menu->strncmp = strncasecmp;
+ 			break;
+@@ -155,14 +158,21 @@ void menu_getopts(struct menu *menu, int argc, char *argv[]) {
+ 		fprintf(stderr, "%s", usage);
+ 		exit(EXIT_FAILURE);
+ 	}
++}
+ 
+-	int height = get_font_height(menu->font);
+-	menu->line_height = height + 2;
++// Compute menu line height and padding.
++void menu_calc_height(struct menu *menu) {
++	struct FontInfo info = get_font_height(menu->font);
++    menu->width = menu->centerd ? info.char_width * 50 : 0;
++	menu->line_height = info.height + 2;
+ 	menu->height = menu->line_height;
+ 	if (menu->lines > 0) {
++		if (menu->item_count < (size_t)menu->lines) {
++			menu->lines = menu->item_count;
++		}
+ 		menu->height += menu->height * menu->lines;
+ 	}
+-	menu->padding = height / 2;
++	menu->padding = info.height / 2;
+ }
+ 
+ // Add an item to the menu.
+@@ -189,6 +199,7 @@ static int compare_items(const void *a, const void *b) {
+ 	return strcmp(item_a->text, item_b->text);
+ }
+ 
++// Sort and deduplicate menu items.
+ void menu_sort_and_deduplicate(struct menu *menu) {
+ 	size_t j = 1;
+ 	size_t i;
+diff --git a/menu.h b/menu.h
+index fdd9ad2..9f6abb2 100644
+--- a/menu.h
++++ b/menu.h
+@@ -29,6 +29,8 @@ struct page {
+ 
+ // Menu state.
+ struct menu {
++    // Whether the menu appears in the center of the screen
++    bool centerd;
+ 	// Whether the menu appears at the bottom of the screen
+ 	bool bottom;
+ 	// The function used to match menu items
+@@ -86,6 +88,7 @@ void menu_destroy(struct menu *menu);
+ void menu_getopts(struct menu *menu, int argc, char *argv[]);
+ void menu_add_item(struct menu *menu, char *text);
+ void menu_sort_and_deduplicate(struct menu *menu);
++void menu_calc_height(struct menu *menu);
+ void menu_invalidate(struct menu *menu);
+ void menu_render_items(struct menu *menu);
+ void menu_paste(struct menu *menu, const char *text, ssize_t len);
+diff --git a/pango.c b/pango.c
+index 07d4c5b..6190a5d 100644
+--- a/pango.c
++++ b/pango.c
+@@ -7,23 +7,29 @@
+ 
+ #include "pango.h"
+ 
+-int get_font_height(const char *fontstr) {
++struct FontInfo get_font_height(const char *fontstr) {
+ 	PangoFontMap *fontmap = pango_cairo_font_map_get_default();
+ 	PangoContext *context = pango_font_map_create_context(fontmap);
+ 	PangoFontDescription *desc = pango_font_description_from_string(fontstr);
+ 	PangoFont *font = pango_font_map_load_font(fontmap, context, desc);
++    struct FontInfo info;
+ 	if (font == NULL) {
+ 		pango_font_description_free(desc);
+ 		g_object_unref(context);
+-		return -1;
++        info.height = -1;
++        info.char_width = -1;
++        info.digit_width = -1;
++		return info;
+ 	}
+ 	PangoFontMetrics *metrics = pango_font_get_metrics(font, NULL);
+-	int height = pango_font_metrics_get_height(metrics) / PANGO_SCALE;
++	info.height = pango_font_metrics_get_height(metrics) / PANGO_SCALE;
++    info.char_width = pango_font_metrics_get_approximate_char_width(metrics) / 1024;
++    info.digit_width = pango_font_metrics_get_approximate_digit_width(metrics) / 1024;
+ 	pango_font_metrics_unref(metrics);
+ 	g_object_unref(font);
+ 	pango_font_description_free(desc);
+ 	g_object_unref(context);
+-	return height;
++	return info;
+ }
+ 
+ PangoLayout *get_pango_layout(cairo_t *cairo, const char *font,
+diff --git a/pango.h b/pango.h
+index 482d49a..03c1d2e 100644
+--- a/pango.h
++++ b/pango.h
+@@ -4,7 +4,11 @@
+ #include <cairo/cairo.h>
+ #include <pango/pangocairo.h>
+ 
+-int get_font_height(const char *font);
++struct FontInfo {
++    int height, char_width, digit_width;
++};
++
++struct FontInfo get_font_height(const char *font);
+ PangoLayout *get_pango_layout(cairo_t *cairo, const char *font,
+ 		const char *text, double scale);
+ void get_text_size(cairo_t *cairo, const char *font, int *width, int *height,
+diff --git a/wayland.c b/wayland.c
+index 823ced1..9016d06 100644
+--- a/wayland.c
++++ b/wayland.c
+@@ -448,14 +448,16 @@ int menu_run(struct menu *menu) {
+ 
+ 	uint32_t anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT |
+ 		ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
+-	if (menu->bottom) {
+-		anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
+-	} else {
+-		anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
+-	}
++    if (!menu->centerd) {
++        if (menu->bottom) {
++            anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
++        } else {
++            anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
++        }
++    }
+ 
+ 	zwlr_layer_surface_v1_set_anchor(layer_surface, anchor);
+-	zwlr_layer_surface_v1_set_size(layer_surface, 0, menu->height);
++	zwlr_layer_surface_v1_set_size(layer_surface, menu->width, menu->height);
+ 	zwlr_layer_surface_v1_set_exclusive_zone(layer_surface, -1);
+ 	zwlr_layer_surface_v1_set_keyboard_interactivity(layer_surface, true);
+ 	zwlr_layer_surface_v1_add_listener(layer_surface, &layer_surface_listener, context);
+diff --git a/wmenu-run.c b/wmenu-run.c
+index 1b7b8c1..59f6dc0 100644
+--- a/wmenu-run.c
++++ b/wmenu-run.c
+@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
+ 	struct menu *menu = menu_create(exec_item);
+ 	menu_getopts(menu, argc, argv);
+ 	read_items(menu);
++	menu_calc_height(menu);
+ 	int status = menu_run(menu);
+ 	menu_destroy(menu);
+ 	return status;
+diff --git a/wmenu.c b/wmenu.c
+index 38e78b9..84007e5 100644
+--- a/wmenu.c
++++ b/wmenu.c
+@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
+ 	struct menu *menu = menu_create(print_item);
+ 	menu_getopts(menu, argc, argv);
+ 	read_items(menu);
++	menu_calc_height(menu);
+ 	int status = menu_run(menu);
+ 	menu_destroy(menu);
+ 	return status;
