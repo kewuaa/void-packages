@@ -6,6 +6,7 @@ hostmakedepends="git pkg-config wayland-devel"
 makedepends="wayland-devel wayland-protocols libxkbcommon-devel
  fcft-devel pixman-devel"
 depends="libxkbcommon wayland fcft pixman
+ bat
  mpv
  wob
  lswt
