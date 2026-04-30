@@ -10,7 +10,6 @@
     .working_directory = .home,
     .startup_cmds = .{
         .{ "mako" },
-        .{ "flclash" },
         .{ "fcitx5" },
         .{ "kanshi" },
         .{ "swayidle" },
