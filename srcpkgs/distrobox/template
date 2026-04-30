@@ -1,7 +1,7 @@
 pkgname=distrobox
 version=1.8.2.5
 revision=1
-depends="$(vopt_if podman podman) $(vopt_if docker docker)"
+depends="crun $(vopt_if podman podman) $(vopt_if docker docker)"
 short_desc="Use any Linux distribution inside your terminal"
 maintainer="Kewuaa <1692525710@qq.com>"
 license="GPL-3.0-only"
