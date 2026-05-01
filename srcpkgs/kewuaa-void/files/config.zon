@@ -15,8 +15,8 @@
         .{ "swayidle" },
         .{ "wayland-pipewire-idle-inhibit" },
         .{ "foot", "--server" },
+        .{ "kwmblocks", "--fifo" },
         .{ "gammastep", "-O", "5000" },
-        .{ "kwmblocks", "/tmp/kwm-status.fifo" },
         .{ "sh", "-c", "$HOME/.local/bin/wobd" },
         .{ "sh", "-c", "$HOME/.local/bin/swaybgd" },
         .{ "wl-paste", "--watch", "cliphist", "store" },
@@ -114,7 +114,7 @@
         },
         // set null to disable status part
         .status = .{
-            .data = .{ .fifo = "/tmp/kwm-status.fifo" }, // .stdin or .{ .fifo = "fifo file path" }
+            .data = .{ .fifo = "${XDG_RUNTIME_DIR}/kwm-status.fifo" }, // .stdin or .{ .fifo = "fifo file path" }
 
             .click = .{
                 .middle = .{ .spawn = .{ .argv = .{ "foot" } } },
