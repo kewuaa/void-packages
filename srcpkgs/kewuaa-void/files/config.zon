@@ -1049,6 +1049,7 @@
         .{ .app_id = .{ .str = "QQ" }, .tag = 0b100, .floating = true },
         .{ .app_id = .{ .str = "wemeetapp" }, .tag = 0b100, .floating = true },
         .{ .app_id = .{ .str = "wechat" }, .tag = 0b100, .floating = true },
+        .{ .app_id = .{ .str = "steam" }, .floating = true },
         .{ .app_id = .{ .str = "virt-manager" }, .floating = true },
         .{ .app_id = .{ .str = "Zotero" }, .floating = true },
         .{ .app_id = .{ .str = "lazarus" }, .floating = true },
