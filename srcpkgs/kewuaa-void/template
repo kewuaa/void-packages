@@ -5,7 +5,7 @@ build_style=zig-build
 hostmakedepends="git pkg-config wayland-devel"
 makedepends="wayland-devel wayland-protocols libxkbcommon-devel
  fcft-devel pixman-devel"
-depends="libxkbcommon wayland fcft pixman
+depends="
  bat
  mpv
  wob
@@ -22,14 +22,13 @@ depends="libxkbcommon wayland fcft pixman
  libnotify
  gammastep
  wlr-randr
- wl-mirror
- timeshift
  slurp grim
  stalonetray
  wf-recorder
  brightnessctl
  swayidle waylock
  lf chafa poppler
+ wl-mirror pipectl
  wl-clipboard cliphist
  xdg-desktop-portal-wlr
  wayland-pipewire-idle-inhibit
