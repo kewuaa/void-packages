@@ -856,7 +856,7 @@
             },
             .{
                 .keysym = "equal",
-                .modifiers = .{ .mod4 = true },
+                .modifiers = .{ .mod4 = true, .mod1 = true },
                 .event = .{
                     .click = .{
                         .pressed = .{
@@ -878,7 +878,7 @@
             },
             .{
                 .keysym = "equal",
-                .modifiers = .{ .mod4 = true, .mod1 = true },
+                .modifiers = .{ .mod4 = true, .ctrl = true },
                 .event = .{
                     .click = .{
                         .pressed = .{
