@@ -198,6 +198,8 @@
             .gap = 9,
         },
         .deck = .{
+            .nmaster = 1,
+            .mfact = 0.5,
             .inner_gap = 12,
             .outer_gap = 9,
             .master_location = .left,
