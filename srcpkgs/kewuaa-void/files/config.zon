@@ -989,7 +989,7 @@
                 .event = .{
                     .click = .{
                         .pressed = .{
-                            .spawn_shell = .{ .cmd = "selection=$(cliphist list | $HOME/.local/bin/wayland_menu); [ -n $selection ] && echo \"$selection\" | cliphist decode | wl-copy" },
+                            .spawn_shell = .{ .cmd = "selection=\"$(cliphist list | $HOME/.local/bin/wayland_menu)\"; [ -n \"$selection\" ] && echo \"$selection\" | cliphist decode | wl-copy" },
                         },
                     },
                 },
