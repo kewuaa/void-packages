@@ -44,7 +44,8 @@ do_fetch() {
     [ -d "$wrksrc/kwm" ] || git clone https://github.com/kewuaa/kwm "$wrksrc/kwm"
     [ -d "$wrksrc/kwim" ] || git clone https://github.com/kewuaa/kwim "$wrksrc/kwim"
 
-    cp "$FILESDIR/config.zon" "$wrksrc/kwm"
+    cp "$FILESDIR/kwm.zon" "$wrksrc/kwm/config.zon"
+    cp "$FILESDIR/kwim.zon" "$wrksrc/kwim/config.zon"
 }
 
 
@@ -73,7 +74,7 @@ do_build() {
 		--release=safe \
 		--verbose \
         -Dpie \
-        -Dkwm-config="$wrksrc/kwm/config.zon" \
+        -Dconfig="config.zon" \
 		install
 }
 
