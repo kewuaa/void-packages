@@ -55,7 +55,6 @@ do_build() {
     cd "$wrksrc/kwm"
     DESTDIR="$destdir" zig build \
         -j"${XBPS_MAKEJOBS}" \
-        --sysroot "${XBPS_CROSS_BASE}" \
         --search-prefix "${XBPS_CROSS_BASE}/usr" \
         --prefix /usr \
         --global-cache-dir /host/zig \
@@ -67,7 +66,6 @@ do_build() {
     cd "$wrksrc/kwim"
     DESTDIR="$destdir" zig build \
         -j"${XBPS_MAKEJOBS}" \
-        --sysroot "${XBPS_CROSS_BASE}" \
         --search-prefix "${XBPS_CROSS_BASE}/usr" \
         --prefix /usr \
         --global-cache-dir /host/zig \
